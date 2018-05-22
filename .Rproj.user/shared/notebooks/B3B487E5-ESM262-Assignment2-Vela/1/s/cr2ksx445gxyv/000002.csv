@@ -1,0 +1,2 @@
+"0","# Connect to our database"
+"0","db<- dbConnect(SQLite(), dbname=""gaz.db"")"

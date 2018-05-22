@@ -1,0 +1,4 @@
+"0","# Write the data to our database"
+"0","dbWriteTable(db, ""data"", data)"
+"2","Error: Table data exists in database, and both overwrite and append are FALSE
+"

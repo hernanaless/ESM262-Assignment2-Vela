@@ -1,0 +1,2 @@
+"0","# Import the data we want to store in the SQL database"
+"0","data = read.csv(""Gazetteer.csv"", sep=""|"")"
