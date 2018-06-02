@@ -32,7 +32,7 @@ library(sqldf)
 
 ```{r}
 # Import the data we want to store in the SQL database
-data = read.csv("Gazetteer.csv", sep="|")
+data = read.csv("CA.csv", sep="|")
 ```
 
 ### Part 1-3: Connect to our Database
@@ -53,38 +53,107 @@ dbWriteTable(db, "data", data)
 
 ```{r}
 # Query our database to display us the highest count of feature Name
-dbGetQuery(db, 'SELECT Name FROM data GROUP BY Name ORDER BY COUNT(*) DESC LIMIT 1')
+HighestFeature <- dbGetQuery(db, 'SELECT Name FROM data GROUP BY Name ORDER BY COUNT(*) DESC LIMIT 1')
+HighestFeature
+
+#The highes count of feature name is 'Church of Christ'
 ```
 ### Part 2-2: Display Lowest Count of Feature Class
 
 ```{r}
 # Query our database to display us the lowest count of feature Class
-dbGetQuery(db, 'SELECT Class FROM data GROUP BY Class ORDER BY COUNT(*) ASC LIMIT 1')
+LowestFeature <- dbGetQuery(db, 'SELECT Class FROM data GROUP BY Class ORDER BY COUNT(*) ASC LIMIT 1')
+LowestFeature
+#The lowest count of feature class is 'Isthmus'
 ```
 
 ### Part 2-3: Display Center of Each County
 
 ```{r}
 # Display center of each county
-dbGetQuery(db, 'SELECT County, AVG(Latitude_DEC) AS 
-           "Approximate Center Latitude", AVG(Longitude_DEC) AS
+CenterCounty <- dbGetQuery(db, 'SELECT County, (MAX(lat)+MIN(lat))/2 AS 
+           "Approximate Center Latitude", (MAX(lon)+MIN(lon))/2 AS
            "Approximate Center Longitude" FROM data GROUP BY County')
+
+#Correction made, (MAX(lat)+MIN(lat))/2 instead of AVG(lat) and (MAX(lon)+MIN(lon))/2 instead of AVG(lon)
+
+CenterCounty
 
 ```
 ### Part 2-4: Display all Features if they are ManMande or Natural
 
 ```{r}
-# Import feature class from previous exercises and join it to our db and store the values of Man/Nature in variable feature
-feature<-read.table("feature.txt", header = TRUE)
-dbWriteTable(db, "feature", feature)
-features<-dbGetQuery(db, "SELECT County, data.Class, 
-                     feature.Feature FROM data LEFT JOIN feature ON data.Class = feature.Class")[,3]
+#Isolate the unique feature classes
+classes <- dbGetQuery(db,"SELECT class FROM data
+                      GROUP BY class
+                      ORDER BY class;")
 
-# Display count of natural and man made features respectively
-table(unlist(features))
+# Add classes to the database
+copy_to(db, classes, "classes_db",
+  temporary = FALSE, 
+  overwrite = TRUE
+)
 
-# Display total number of natural and man made features
-length(features)
+# Create a cookie to talk to the table
+classes_db <- tbl(db, "classes_db")
+
+# Create a new tibble that defines each class as natural or manmade
+types <- mutate(classes,
+                Class_Type = c("Manmade", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Manmade", "Manmade", "Manmade", "Natural", "Manmade", "Manmade", "Natural", "Manmade", "Manmade", "Natural", "Natural", "Manmade", "Manmade", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Manmade", "Manmade", "Natural", "Natural", "Natural", "Natural", "Natural", "Manmade", "Manmade", "Manmade", "Manmade", "Manmade", "Natural", "Natural", "Manmade", "Manmade", "Natural", "Natural", "Manmade", "Manmade", "Natural", "Manmade", "Natural", "Natural", "Natural", "Natural", "Natural", "Natural", "Manmade", "Manmade", "Manmade", "Natural", "Manmade", "Natural")
+)
+
+# Add types to the database
+copy_to(db, types, "types_db",
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+types_db <- tbl(db, "types_db")
+
+# Join to gaz, select desired columns
+class_types <- dbGetQuery(db, "SELECT data.name, data.class, data.county, types_db.Class_Type FROM data JOIN types_db ON data.class = types_db.class;")
+
+# Type convert county name to a factor
+class_types$county <- as.factor(class_types$county)
+
+#Copy class_types to the database
+copy_to(db, class_types, "class_types_db",
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+class_types_db <- tbl(db, "class_types_db")
+
+# Pull the different metrics you need
+manmade <- dbGetQuery(db, "SELECT county AS 'county', count(Class_Type) AS 'Manmade' FROM class_types_db WHERE Class_Type = 'Manmade' AND county != 'NA' GROUP BY county;")
+
+# Add to the database
+copy_to(db, manmade, "manmade",
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+manmade_db <- tbl(db, "manmade")
+
+#Pull the natural metrics
+natural <- dbGetQuery(db, "SELECT county AS 'county', count(Class_Type) AS 'Natural' FROM class_types_db WHERE Class_Type = 'Natural' AND county != 'NA' GROUP BY county;")
+
+# Add to the database
+copy_to(db, natural, "natural_db",
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+natural_db <- tbl(db, "natural_db")
+
+# Join these and calculate the fractions
+fractions <- dbGetQuery(db, "SELECT manmade.county, CAST(manmade.Manmade AS REAL)/(manmade.Manmade + natural_db.Natural) AS 'Fraction Manmade', CAST(natural_db.Natural AS REAL)/(manmade.Manmade + natural_db.Natural) AS 'Fraction Natural' FROM manmade JOIN natural_db ON manmade.county = natural_db.county;")
+fractions
+
 ```
 
 

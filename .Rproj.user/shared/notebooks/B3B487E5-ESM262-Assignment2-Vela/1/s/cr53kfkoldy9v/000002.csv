@@ -1,8 +1,7 @@
-"0","library(plyr)"
-"0","library(tidyverse)"
-"0","library(readr)"
-"0","library(tibble)"
-"0","library(dplyr)"
-"0","library(tidyr)"
-"0","library(DBI)"
-"0","library(sqldf)"
+"0","library(sqldf)
+"
+"2","Loading required package: gsubfn
+"
+"2","package ‘gsubfn’ was built under R version 3.4.4"
+"2","Loading required package: proto
+"

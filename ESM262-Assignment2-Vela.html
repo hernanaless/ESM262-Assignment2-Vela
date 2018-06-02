@@ -162,7 +162,7 @@ library(sqldf)</code></pre>
 <div id="part-1-2-import-data" class="section level3">
 <h3>Part 1-2: Import Data</h3>
 <pre class="r"><code># Import the data we want to store in the SQL database
-data = read.csv(&quot;Gazetteer.csv&quot;, sep=&quot;|&quot;)</code></pre>
+data = read.csv(&quot;CA.csv&quot;, sep=&quot;|&quot;)</code></pre>
 </div>
 <div id="part-1-3-connect-to-our-database" class="section level3">
 <h3>Part 1-3: Connect to our Database</h3>
@@ -177,160 +177,284 @@ dbWriteTable(db, &quot;data&quot;, data)</code></pre>
 <div id="part-2-1-display-highest-count-of-feature-name" class="section level3">
 <h3>Part 2-1: Display Highest Count of Feature Name</h3>
 <pre class="r"><code># Query our database to display us the highest count of feature Name
-dbGetQuery(db, 'SELECT Name FROM data GROUP BY Name ORDER BY COUNT(*) DESC LIMIT 1')</code></pre>
-<pre><code>##               Name
+HighestFeature &lt;- dbGetQuery(db, 'SELECT Name FROM data GROUP BY Name ORDER BY COUNT(*) DESC LIMIT 1')
+HighestFeature</code></pre>
+<pre><code>##               name
 ## 1 Church of Christ</code></pre>
+<pre class="r"><code>#The highes count of feature name is 'Church of Christ'</code></pre>
 </div>
 <div id="part-2-2-display-lowest-count-of-feature-class" class="section level3">
 <h3>Part 2-2: Display Lowest Count of Feature Class</h3>
 <pre class="r"><code># Query our database to display us the lowest count of feature Class
-dbGetQuery(db, 'SELECT Class FROM data GROUP BY Class ORDER BY COUNT(*) ASC LIMIT 1')</code></pre>
-<pre><code>##     Class
+LowestFeature &lt;- dbGetQuery(db, 'SELECT Class FROM data GROUP BY Class ORDER BY COUNT(*) ASC LIMIT 1')
+LowestFeature</code></pre>
+<pre><code>##     class
 ## 1 Isthmus</code></pre>
+<pre class="r"><code>#The lowest count of feature class is 'Isthmus'</code></pre>
 </div>
 <div id="part-2-3-display-center-of-each-county" class="section level3">
 <h3>Part 2-3: Display Center of Each County</h3>
 <pre class="r"><code># Display center of each county
-dbGetQuery(db, 'SELECT County, AVG(Latitude_DEC) AS 
-           &quot;Approximate Center Latitude&quot;, AVG(Longitude_DEC) AS
-           &quot;Approximate Center Longitude&quot; FROM data GROUP BY County')</code></pre>
-<pre><code>##             County Approximate Center Latitude
-## 1             &lt;NA&gt;                    38.28899
-## 2          Alameda                    37.72641
-## 3           Alpine                    38.46465
-## 4           Amador                    38.24350
-## 5            Butte                    39.20366
-## 6        Calaveras                    38.02912
-## 7           Colusa                    39.04933
-## 8     Contra Costa                    37.92377
-## 9        Del Norte                    41.50418
-## 10       El Dorado                    38.30023
-## 11          Fresno                    36.63115
-## 12           Glenn                    39.55104
-## 13        Humboldt                    40.48476
-## 14        Imperial                    32.88554
-## 15            Inyo                    36.61158
-## 16            Kern                    35.36715
-## 17           Kings                    36.16381
-## 18            Lake                    38.04076
-## 19          Lassen                    40.60123
-## 20     Los Angeles                    33.95313
-## 21          Madera                    36.37190
-## 22           Marin                    37.83550
-## 23        Mariposa                    37.32609
-## 24       Mendocino                    39.23421
-## 25          Merced                    37.22837
-## 26           Modoc                    41.33246
-## 27            Mono                    37.89973
-## 28        Monterey                    35.81198
-## 29            Napa                    38.08476
-## 30          Nevada                    39.20459
-## 31          Orange                    33.58068
-## 32          Placer                    38.87233
-## 33          Plumas                    39.69230
-## 34       Riverside                    33.62548
-## 35      Sacramento                    38.37442
-## 36      San Benito                    36.13041
-## 37  San Bernardino                    34.27944
-## 38       San Diego                    32.62458
-## 39   San Francisco                    37.76651
-## 40     San Joaquin                    37.94056
-## 41 San Luis Obispo                    35.31239
-## 42       San Mateo                    37.44854
-## 43   Santa Barbara                    32.02344
-## 44     Santa Clara                    37.29720
-## 45      Santa Cruz                    35.56790
-## 46          Shasta                    40.62516
-## 47          Sierra                    39.52475
-## 48        Siskiyou                    41.42510
-## 49          Solano                    38.12828
-## 50          Sonoma                    37.57025
-## 51      Stanislaus                    37.59442
-## 52          Sutter                    38.07167
-## 53          Tehama                    40.01780
-## 54         Trinity                    40.58469
-## 55          Tulare                    36.04082
-## 56        Tuolumne                    37.79588
-## 57         Ventura                    32.99511
-## 58            Yolo                    38.65037
-## 59            Yuba                    39.16233
+CenterCounty &lt;- dbGetQuery(db, 'SELECT County, (MAX(lat)+MIN(lat))/2 AS 
+           &quot;Approximate Center Latitude&quot;, (MAX(lon)+MIN(lon))/2 AS
+           &quot;Approximate Center Longitude&quot; FROM data GROUP BY County')
+
+#Correction made, (MAX(lat)+MIN(lat))/2 instead of AVG(lat) and (MAX(lon)+MIN(lon))/2 instead of AVG(lon)
+
+CenterCounty</code></pre>
+<pre><code>##             county Approximate Center Latitude
+## 1                                     37.96936
+## 2          Alameda                    37.68525
+## 3           Alpine                    37.61801
+## 4           Amador                    38.35542
+## 5            Butte                    39.72335
+## 6        Calaveras                    36.46287
+## 7           Colusa                    39.16739
+## 8     Contra Costa                    37.90659
+## 9        Del Norte                    41.69998
+## 10       El Dorado                    37.97298
+## 11          Fresno                    36.74745
+## 12           Glenn                    39.62933
+## 13        Humboldt                    40.65793
+## 14        Imperial                    33.05796
+## 15            Inyo                    36.60175
+## 16            Kern                    35.34304
+## 17           Kings                    36.13466
+## 18            Lake                    39.13503
+## 19          Lassen                    40.46185
+## 20     Los Angeles                    35.08041
+## 21          Madera                    36.04632
+## 22           Marin                    36.83411
+## 23        Mariposa                    37.24062
+## 24       Mendocino                    39.38642
+## 25          Merced                    37.18383
+## 26           Modoc                    41.58628
+## 27            Mono                    38.06252
+## 28        Monterey                    36.33260
+## 29            Napa                    38.49838
+## 30          Nevada                    39.26712
+## 31          Orange                    33.66613
+## 32          Placer                    39.03074
+## 33          Plumas                    37.34911
+## 34       Riverside                    36.14524
+## 35      Sacramento                    39.09157
+## 36      San Benito                    36.59107
+## 37  San Bernardino                    35.87137
+## 38       San Diego                    35.16475
+## 39   San Francisco                    36.00691
+## 40     San Joaquin                    37.89854
+## 41 San Luis Obispo                    35.35580
+## 42       San Mateo                    37.39077
+## 43   Santa Barbara                    33.96514
+## 44     Santa Clara                    38.88102
+## 45      Santa Cruz                    35.63555
+## 46          Shasta                    40.78738
+## 47          Sierra                    37.37716
+## 48        Siskiyou                    41.50110
+## 49          Solano                    36.13968
+## 50          Sonoma                    38.46991
+## 51      Stanislaus                    37.61389
+## 52          Sutter                    39.03162
+## 53          Tehama                    40.06191
+## 54         Trinity                    40.66529
+## 55          Tulare                    36.29215
+## 56        Tuolumne                    39.00205
+## 57         Ventura                    34.04778
+## 58            Yolo                    38.63463
+## 59            Yuba                    39.27781
 ##    Approximate Center Longitude
-## 1                     -121.5334
-## 2                     -122.1108
-## 3                     -119.4155
-## 4                     -120.0896
-## 5                     -120.1489
-## 6                     -120.0978
-## 7                     -121.8448
-## 8                     -122.0018
-## 9                     -123.2159
-## 10                    -119.0416
-## 11                    -118.8700
-## 12                    -122.2146
-## 13                    -123.3152
-## 14                    -115.3010
-## 15                    -117.5558
-## 16                    -118.7343
-## 17                    -119.7920
-## 18                    -119.5217
-## 19                    -120.4653
-## 20                    -117.7593
-## 21                    -116.7716
-## 22                    -122.1396
-## 23                    -118.9436
-## 24                    -122.9063
-## 25                    -120.6950
-## 26                    -120.0731
-## 27                    -118.8492
-## 28                    -119.6145
-## 29                    -121.1485
-## 30                    -120.4911
-## 31                    -117.3310
-## 32                    -120.1922
-## 33                    -120.0633
-## 34                    -116.2180
-## 35                    -120.8456
-## 36                    -119.5199
-## 37                    -116.4048
-## 38                    -115.9804
-## 39                    -122.4404
-## 40                    -121.2930
-## 41                    -120.4028
-## 42                    -122.1413
-## 43                    -111.0647
-## 44                    -121.8908
-## 45                    -117.2150
-## 46                    -121.7631
-## 47                    -120.5424
-## 48                    -122.1756
-## 49                    -121.7599
-## 50                    -119.9412
-## 51                    -120.9692
-## 52                    -118.5862
-## 53                    -121.9367
-## 54                    -122.8708
-## 55                    -118.1389
-## 56                    -119.3361
-## 57                    -114.3863
-## 58                    -121.8380
-## 59                    -120.9307</code></pre>
+## 1                    -121.38113
+## 2                    -121.92426
+## 3                    -118.22900
+## 4                    -121.06133
+## 5                    -121.57164
+## 6                    -119.89293
+## 7                    -122.27804
+## 8                    -121.99441
+## 9                    -123.95501
+## 10                   -121.44465
+## 11                   -119.63660
+## 12                   -122.40707
+## 13                   -122.02432
+## 14                   -115.28554
+## 15                   -117.28339
+## 16                   -119.46000
+## 17                   -119.88702
+## 18                   -122.75027
+## 19                   -120.80940
+## 20                   -118.99734
+## 21                   -119.79335
+## 22                   -121.96217
+## 23                   -119.33459
+## 24                   -123.42876
+## 25                   -120.69073
+## 26                   -120.73149
+## 27                   -118.93928
+## 28                   -121.11352
+## 29                   -122.36248
+## 30                   -120.64133
+## 31                   -117.78013
+## 32                   -120.77674
+## 33                   -119.43460
+## 34                   -118.40510
+## 35                   -121.61430
+## 36                   -121.11422
+## 37                   -117.82107
+## 38                   -119.23597
+## 39                   -120.89737
+## 40                   -121.25301
+## 41                   -120.40766
+## 42                   -122.31969
+## 43                   -119.57749
+## 44                   -121.89375
+## 45                   -120.42984
+## 46                   -121.65220
+## 47                   -120.53994
+## 48                    -40.98668
+## 49                   -120.56184
+## 50                   -122.50554
+## 51                   -120.94062
+## 52                   -121.69649
+## 53                   -122.19861
+## 54                   -123.03989
+## 55                   -118.77996
+## 56                   -121.58007
+## 57                   -119.16441
+## 58                   -121.94474
+## 59                   -121.31274</code></pre>
 </div>
 <div id="part-2-4-display-all-features-if-they-are-manmande-or-natural" class="section level3">
 <h3>Part 2-4: Display all Features if they are ManMande or Natural</h3>
-<pre class="r"><code># Import feature class from previous exercises and join it to our db and store the values of Man/Nature in variable feature
-feature&lt;-read.table(&quot;feature.txt&quot;, header = TRUE)
-dbWriteTable(db, &quot;feature&quot;, feature)
-features&lt;-dbGetQuery(db, &quot;SELECT County, data.Class, 
-                     feature.Feature FROM data LEFT JOIN feature ON data.Class = feature.Class&quot;)[,3]
+<pre class="r"><code>#Isolate the unique feature classes
+classes &lt;- dbGetQuery(db,&quot;SELECT class FROM data
+                      GROUP BY class
+                      ORDER BY class;&quot;)
 
-# Display count of natural and man made features respectively
-table(unlist(features))</code></pre>
-<pre><code>## 
-##    Man Nature 
-##  82371  39790</code></pre>
-<pre class="r"><code># Display total number of natural and man made features
-length(features)</code></pre>
-<pre><code>## [1] 122161</code></pre>
+# Add classes to the database
+copy_to(db, classes, &quot;classes_db&quot;,
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+classes_db &lt;- tbl(db, &quot;classes_db&quot;)
+
+# Create a new tibble that defines each class as natural or manmade
+types &lt;- mutate(classes,
+                Class_Type = c(&quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Manmade&quot;, &quot;Natural&quot;, &quot;Manmade&quot;, &quot;Natural&quot;)
+)</code></pre>
+<pre><code>## Warning: package 'bindrcpp' was built under R version 3.4.4</code></pre>
+<pre class="r"><code># Add types to the database
+copy_to(db, types, &quot;types_db&quot;,
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+types_db &lt;- tbl(db, &quot;types_db&quot;)
+
+# Join to gaz, select desired columns
+class_types &lt;- dbGetQuery(db, &quot;SELECT data.name, data.class, data.county, types_db.Class_Type FROM data JOIN types_db ON data.class = types_db.class;&quot;)
+
+# Type convert county name to a factor
+class_types$county &lt;- as.factor(class_types$county)
+
+#Copy class_types to the database
+copy_to(db, class_types, &quot;class_types_db&quot;,
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+class_types_db &lt;- tbl(db, &quot;class_types_db&quot;)
+
+# Pull the different metrics you need
+manmade &lt;- dbGetQuery(db, &quot;SELECT county AS 'county', count(Class_Type) AS 'Manmade' FROM class_types_db WHERE Class_Type = 'Manmade' AND county != 'NA' GROUP BY county;&quot;)
+
+# Add to the database
+copy_to(db, manmade, &quot;manmade&quot;,
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+manmade_db &lt;- tbl(db, &quot;manmade&quot;)
+
+#Pull the natural metrics
+natural &lt;- dbGetQuery(db, &quot;SELECT county AS 'county', count(Class_Type) AS 'Natural' FROM class_types_db WHERE Class_Type = 'Natural' AND county != 'NA' GROUP BY county;&quot;)
+
+# Add to the database
+copy_to(db, natural, &quot;natural_db&quot;,
+  temporary = FALSE, 
+  overwrite = TRUE
+)
+
+# Create a cookie to talk to the table
+natural_db &lt;- tbl(db, &quot;natural_db&quot;)
+
+# Join these and calculate the fractions
+fractions &lt;- dbGetQuery(db, &quot;SELECT manmade.county, CAST(manmade.Manmade AS REAL)/(manmade.Manmade + natural_db.Natural) AS 'Fraction Manmade', CAST(natural_db.Natural AS REAL)/(manmade.Manmade + natural_db.Natural) AS 'Fraction Natural' FROM manmade JOIN natural_db ON manmade.county = natural_db.county;&quot;)
+fractions</code></pre>
+<pre><code>##             county Fraction Manmade Fraction Natural
+## 1                         0.2222222       0.77777778
+## 2          Alameda        0.9180488       0.08195122
+## 3           Alpine        0.3832442       0.61675579
+## 4           Amador        0.7230514       0.27694859
+## 5            Butte        0.6472754       0.35272459
+## 6        Calaveras        0.6788390       0.32116105
+## 7           Colusa        0.4781784       0.52182163
+## 8     Contra Costa        0.8372953       0.16270470
+## 9        Del Norte        0.4473684       0.55263158
+## 10       El Dorado        0.5758656       0.42413442
+## 11          Fresno        0.5923327       0.40766725
+## 12           Glenn        0.5273070       0.47269303
+## 13        Humboldt        0.3945772       0.60542276
+## 14        Imperial        0.8901561       0.10984394
+## 15            Inyo        0.4444444       0.55555556
+## 16            Kern        0.6972344       0.30276565
+## 17           Kings        0.7374150       0.26258503
+## 18            Lake        0.4101695       0.58983051
+## 19          Lassen        0.4238683       0.57613169
+## 20     Los Angeles        0.8917788       0.10822116
+## 21          Madera        0.5884708       0.41152922
+## 22           Marin        0.7192408       0.28075916
+## 23        Mariposa        0.4174757       0.58252427
+## 24       Mendocino        0.3942946       0.60570535
+## 25          Merced        0.8496503       0.15034965
+## 26           Modoc        0.4343284       0.56567164
+## 27            Mono        0.4304254       0.56957462
+## 28        Monterey        0.6361805       0.36381950
+## 29            Napa        0.6455556       0.35444444
+## 30          Nevada        0.6314935       0.36850649
+## 31          Orange        0.9220073       0.07799274
+## 32          Placer        0.6347477       0.36525229
+## 33          Plumas        0.3997642       0.60023585
+## 34       Riverside        0.7883807       0.21161928
+## 35      Sacramento        0.9564229       0.04357711
+## 36      San Benito        0.4969970       0.50300300
+## 37  San Bernardino        0.7149954       0.28500460
+## 38       San Diego        0.8173361       0.18266391
+## 39   San Francisco        0.9215557       0.07844430
+## 40     San Joaquin        0.8911846       0.10881543
+## 41 San Luis Obispo        0.6062040       0.39379600
+## 42       San Mateo        0.8241582       0.17584180
+## 43   Santa Barbara        0.6555102       0.34448980
+## 44     Santa Clara        0.8522013       0.14779874
+## 45      Santa Cruz        0.7389801       0.26101988
+## 46          Shasta        0.4348003       0.56519967
+## 47          Sierra        0.5207424       0.47925764
+## 48        Siskiyou        0.3291357       0.67086434
+## 49          Solano        0.7827511       0.21724891
+## 50          Sonoma        0.6873977       0.31260229
+## 51      Stanislaus        0.8489083       0.15109170
+## 52          Sutter        0.8260870       0.17391304
+## 53          Tehama        0.4135079       0.58649207
+## 54         Trinity        0.3061773       0.69382274
+## 55          Tulare        0.5315375       0.46846255
+## 56        Tuolumne        0.4737477       0.52625226
+## 57         Ventura        0.7600172       0.23998277
+## 58            Yolo        0.7179126       0.28208745
+## 59            Yuba        0.6589404       0.34105960</code></pre>
 </div>
 </div>
 
